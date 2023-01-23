@@ -6,7 +6,7 @@ const About: Component = () => {
     <>
       <Header title='About' />
       <main>
-        <div class='mx-auto max-w-7xl py-6 sm:px-6 lg:px-8'>
+        {/* <div class='mx-auto max-w-7xl py-6 sm:px-6 lg:px-8'>
           <div class='px-4 py-6 sm:px-0'>
             <div class='mx-auto mt-10 max-w-screen-xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28'>
               <div class='sm:text-center lg:text-left'>
@@ -25,7 +25,8 @@ const About: Component = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
+        about
       </main>
     </>
   )

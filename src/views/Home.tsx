@@ -10,6 +10,7 @@ const Home: Component = () => {
   const [projects, setProjects] = createSignal<Record[]>([])
 
   createEffect(() => {
+    if (!user()) return
     pb.collection('projects')
       .getList(1, 10, {
         filter: `owner.id = "${user().id}" || members.id = "${user().id}"`,
