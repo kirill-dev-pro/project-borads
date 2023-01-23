@@ -4,6 +4,7 @@ import { Admin, Record } from 'pocketbase'
 
 export const AuthContext = createContext<{
   user: Accessor<Record | Admin>
+  avatarUrl: Accessor<string>
   error: Accessor<string>
   loginWithPassword: (email: string, password: string) => void
   logout: () => void
@@ -29,6 +30,9 @@ export const AuthProvider = (props: AuthProviderProps) => {
     client.authStore.onChange(token => {
       if (token) {
         setUser(client.authStore.model)
+        setAvatarUrl(
+          client.getFileUrl(client.authStore.model as Record, client.authStore.model.avatar),
+        )
         sessionStorage.setItem('auth', client.authStore.exportToCookie())
       } else {
         setUser(null)
@@ -38,6 +42,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
   })
 
   const [user, setUser] = createSignal(client.authStore.model)
+  const [avatarUrl, setAvatarUrl] = createSignal('')
   const [error, setError] = createSignal<string>(null)
 
   function loginWithPassword(email: string, password: string) {
@@ -55,7 +60,7 @@ export const AuthProvider = (props: AuthProviderProps) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, error, loginWithPassword, logout }}>
+    <AuthContext.Provider value={{ user, avatarUrl, error, loginWithPassword, logout }}>
       {props.children}
     </AuthContext.Provider>
   )

@@ -5,7 +5,7 @@ import { A } from '@solidjs/router'
 const Nav: Component = () => {
   const [showProfileMenu, setShowProfileMenu] = createSignal(false)
   const [showMenu, setShowMenu] = createSignal(false)
-  const { user, logout } = useAuth()
+  const { user, logout, avatarUrl } = useAuth()
 
   const links = [
     { text: 'Home', to: '/' },
@@ -98,7 +98,7 @@ const Nav: Component = () => {
                     <img
                       class='h-8 w-8 rounded-full'
                       src={
-                        user().avatar ||
+                        avatarUrl() ||
                         'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'
                       }
                       alt=''
@@ -217,7 +217,7 @@ const Nav: Component = () => {
                 <img
                   class='h-10 w-10 rounded-full'
                   src={
-                    user().avatar ||
+                    avatarUrl() ||
                     'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'
                   }
                   alt=''
