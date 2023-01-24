@@ -1,5 +1,14 @@
-import { usePB } from './usePB'
-import { createEffect, createSignal, JSX, onMount, createContext, Accessor } from 'solid-js'
+import { usePB } from '.'
+import {
+  createEffect,
+  createSignal,
+  JSX,
+  onMount,
+  createContext,
+  Accessor,
+  useContext,
+  onCleanup,
+} from 'solid-js'
 import { Admin, Record } from 'pocketbase'
 
 export const AuthContext = createContext<{
@@ -21,29 +30,35 @@ export const AuthProvider = (props: AuthProviderProps) => {
     throw new Error('useAuth must be used within a <PocketBaseProvider>')
   }
 
+  const [user, setUser] = createSignal(client.authStore.model)
+  const [avatarUrl, setAvatarUrl] = createSignal('')
+  const [error, setError] = createSignal<string>(null)
+
   onMount(() => {
     const authData = sessionStorage.getItem('auth')
     client.authStore.loadFromCookie(authData)
   })
 
   createEffect(() => {
-    client.authStore.onChange(token => {
+    const unsubscribe = client.authStore.onChange(token => {
       if (token) {
         setUser(client.authStore.model)
-        setAvatarUrl(
-          client.getFileUrl(client.authStore.model as Record, client.authStore.model.avatar),
-        )
         sessionStorage.setItem('auth', client.authStore.exportToCookie())
       } else {
         setUser(null)
         sessionStorage.removeItem('auth')
       }
     })
+    onCleanup(() => unsubscribe())
   })
 
-  const [user, setUser] = createSignal(client.authStore.model)
-  const [avatarUrl, setAvatarUrl] = createSignal('')
-  const [error, setError] = createSignal<string>(null)
+  createEffect(() => {
+    if (user()) {
+      setAvatarUrl(client.getFileUrl(user() as Record, user().avatar))
+    } else {
+      setAvatarUrl('')
+    }
+  })
 
   function loginWithPassword(email: string, password: string) {
     client
@@ -65,3 +80,5 @@ export const AuthProvider = (props: AuthProviderProps) => {
     </AuthContext.Provider>
   )
 }
+
+export const useAuth = () => useContext(AuthContext)

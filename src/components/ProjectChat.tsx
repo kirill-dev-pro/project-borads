@@ -12,7 +12,6 @@ export function ProjectChat({ projectId }: { projectId: string }) {
 
   async function loadMessages() {
     try {
-      console.log('get messages page', 1 + Math.round(messages().length / 10))
       const res = await pb
         .collection('messages')
         .getList(1 + Math.round(messages().length / 10), 10, {
@@ -21,7 +20,6 @@ export function ProjectChat({ projectId }: { projectId: string }) {
           sort: '-created',
         })
       if (res.items.length === 0) return
-      console.log('res', res)
       setMessages(_.uniqBy([...messages(), ...res.items], 'id'))
     } catch (err) {
       console.error('Error:', err)
@@ -39,16 +37,13 @@ export function ProjectChat({ projectId }: { projectId: string }) {
         author: user().id,
       })
       .then(res => {
-        console.log('res', res)
         textareaRef.value = ''
-        // loadMessages()
       })
       .catch(err => {
         console.error('Error:', err)
       })
   }
 
-  // createEffect(loadMessages)
   onMount(async () => {
     await loadMessages()
     messagesRef.scrollTop = messagesRef.scrollHeight
@@ -72,7 +67,7 @@ export function ProjectChat({ projectId }: { projectId: string }) {
 
   return (
     <div class='flex w-64 flex-col gap-2 rounded border border-black p-1'>
-      <h2>Messages:</h2>
+      <h2 class='text-xl'>Messages:</h2>
       <div
         class='h-36 overflow-x-hidden overflow-y-scroll rounded border border-black p-1'
         ref={messagesRef}
@@ -90,7 +85,7 @@ export function ProjectChat({ projectId }: { projectId: string }) {
         <textarea class='rounded border border-black' ref={textareaRef} />
         <button
           type='submit'
-          class='rounded border border-black p-1 shadow active:translate-y-px active:scale-95'
+          class='rounded border border-black p-1 hover:shadow active:translate-y-px active:scale-95'
         >
           Send!
         </button>

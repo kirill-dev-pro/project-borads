@@ -8,11 +8,11 @@
     "jsx": "preserve",
     "jsxImportSource": "solid-js",
     "types": ["vite/client"],
-    "paths": {
-      "lib/*": ["lib/*"],
-      "views/*": ["src/views/*"],
-      "components/*": ["components/*"],
-    },
+    // "paths": {
+    //   "lib/*": ["lib/*"],
+    //   "views/*": ["src/views/*"],
+    //   "components/*": ["components/*"],
+    // },
     "baseUrl": "./src"
   },
   "include": ["src"],

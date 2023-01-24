@@ -1,4 +1,4 @@
-import { useAuth } from '../lib/pocketbase/useAuth'
+import { useAuth } from '../lib/pocketbase'
 import { Component, createSignal, For, Show } from 'solid-js'
 import { A } from '@solidjs/router'
 
@@ -9,7 +9,7 @@ const Nav: Component = () => {
 
   const links = [
     { text: 'Home', to: '/' },
-    { text: 'About', to: '/about' },
+    // { text: 'About', to: '/about' },
   ]
   const activeClass = 'text-white bg-gray-900'
   const inactiveClass = 'text-gray-300 hover:text-white hover:bg-gray-700'

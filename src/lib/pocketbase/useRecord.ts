@@ -3,7 +3,12 @@ import { createEffect, createSignal, useContext } from 'solid-js'
 import type Client from 'pocketbase'
 import { Record } from 'pocketbase'
 
-export const useRecord = (collection: string, id: string, realtime: boolean = true) => {
+export const useRecord = (
+  collection: string,
+  id: string,
+  realtime: boolean = true,
+  expand: string = '',
+) => {
   const client = useContext<Client>(PocketBaseContext)
 
   if (!client) {
@@ -16,7 +21,7 @@ export const useRecord = (collection: string, id: string, realtime: boolean = tr
   createEffect(() => {
     client
       .collection(collection)
-      .getOne(id)
+      .getOne(id, { expand })
       .then(record => {
         setValue(record)
         setError(undefined)
