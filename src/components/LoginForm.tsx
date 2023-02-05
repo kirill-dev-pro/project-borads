@@ -1,7 +1,7 @@
-import { useAuth } from '../lib/pocketbase'
+import { useAuth } from 'lib/appwrite'
 
 export function LoginForm() {
-  const { error, loginWithPassword } = useAuth()
+  const { error, loginWithPassword, continueAsGuest } = useAuth()
 
   let emailRef
   let passwordRef
@@ -22,6 +22,9 @@ export function LoginForm() {
           Login
         </button>
       </form>
+      <button class='mt-2 rounded border-2 border-black bg-white p-2' onClick={continueAsGuest}>
+        Continue as guest
+      </button>
     </div>
   )
 }

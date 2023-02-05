@@ -1,11 +1,13 @@
-import { useAuth } from '../lib/pocketbase'
+// import { useAppwrite, useAuth } from 'lib/appwrite'
+// import { useAuth } from '../lib/pocketbase'
 import { Component, createSignal, For, Show } from 'solid-js'
 import { A } from '@solidjs/router'
 
 const Nav: Component = () => {
   const [showProfileMenu, setShowProfileMenu] = createSignal(false)
   const [showMenu, setShowMenu] = createSignal(false)
-  const { user, logout, avatarUrl } = useAuth()
+  const { user, logout } = {} // useAuth()
+  const { avatars } = {} // useAppwrite()
 
   const links = [
     { text: 'Home', to: '/' },
@@ -98,7 +100,7 @@ const Nav: Component = () => {
                     <img
                       class='h-8 w-8 rounded-full'
                       src={
-                        avatarUrl() ||
+                        avatars.getInitials(user().name).href ||
                         'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'
                       }
                       alt=''
@@ -121,6 +123,14 @@ const Nav: Component = () => {
                         aria-orientation='vertical'
                         aria-labelledby='user-menu'
                       >
+                        <div class='px-4 py-2'>
+                          <div class='text-base font-medium leading-none text-black'>
+                            {user().name || 'anonymous'}
+                          </div>
+                          <div class='text-sm font-medium leading-none text-gray-700'>
+                            {user().email}
+                          </div>
+                        </div>
                         {/* <a
                           href='#'
                           class='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
@@ -136,8 +146,8 @@ const Nav: Component = () => {
                           Settings
                         </a> */}
                         <a
-                          href='/'
-                          onClick={logout}
+                          // href='/'
+                          onClick={() => logout()}
                           class='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100'
                           role='menuitem'
                         >
@@ -217,14 +227,16 @@ const Nav: Component = () => {
                 <img
                   class='h-10 w-10 rounded-full'
                   src={
-                    avatarUrl() ||
+                    avatars.getInitials(user().name).href ||
                     'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'
                   }
                   alt=''
                 />
               </div>
               <div class='ml-3'>
-                <div class='text-base font-medium leading-none text-white'>{user().name}</div>
+                <div class='text-base font-medium leading-none text-white'>
+                  {user().name || 'anonymous'}
+                </div>
                 <div class='text-sm font-medium leading-none text-gray-400'>{user().email}</div>
               </div>
             </div>
@@ -242,8 +254,8 @@ const Nav: Component = () => {
                 Settings
               </a> */}
               <a
-                href='/'
-                onClick={logout}
+                // href='/'
+                onClick={() => logout()}
                 class='block rounded-md px-3 py-2 text-base font-medium text-gray-400 hover:bg-gray-700 hover:text-white'
               >
                 Sign out

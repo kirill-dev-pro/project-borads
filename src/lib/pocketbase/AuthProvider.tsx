@@ -1,4 +1,4 @@
-import { usePB } from '.'
+import { usePocketbase } from '.'
 import {
   createEffect,
   createSignal,
@@ -24,7 +24,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = (props: AuthProviderProps) => {
-  const client = usePB()
+  const client = usePocketbase()
 
   if (!client) {
     throw new Error('useAuth must be used within a <PocketBaseProvider>')
