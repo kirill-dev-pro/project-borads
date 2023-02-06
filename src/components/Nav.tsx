@@ -1,11 +1,11 @@
-import { useAuth } from '../lib/pocketbase'
+import { useAuth } from '../lib/firebase/auth/useAuth'
 import { Component, createSignal, For, Show } from 'solid-js'
 import { A } from '@solidjs/router'
 
 const Nav: Component = () => {
   const [showProfileMenu, setShowProfileMenu] = createSignal(false)
   const [showMenu, setShowMenu] = createSignal(false)
-  const { user, logout, avatarUrl } = useAuth()
+  const { user, logout } = useAuth()
 
   const links = [
     { text: 'Home', to: '/' },
@@ -98,7 +98,7 @@ const Nav: Component = () => {
                     <img
                       class='h-8 w-8 rounded-full'
                       src={
-                        avatarUrl() ||
+                        user().photoURL ||
                         'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'
                       }
                       alt=''
@@ -217,14 +217,16 @@ const Nav: Component = () => {
                 <img
                   class='h-10 w-10 rounded-full'
                   src={
-                    avatarUrl() ||
+                    user().photoURL ||
                     'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'
                   }
                   alt=''
                 />
               </div>
               <div class='ml-3'>
-                <div class='text-base font-medium leading-none text-white'>{user().name}</div>
+                <div class='text-base font-medium leading-none text-white'>
+                  {user().displayName}
+                </div>
                 <div class='text-sm font-medium leading-none text-gray-400'>{user().email}</div>
               </div>
             </div>

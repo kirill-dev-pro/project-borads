@@ -13,7 +13,7 @@
     //   "views/*": ["src/views/*"],
     //   "components/*": ["components/*"],
     // },
-    "baseUrl": "./src"
+    // "baseUrl": "./src"
   },
   "include": ["src"],
 }

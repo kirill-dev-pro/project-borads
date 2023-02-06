@@ -1,7 +1,7 @@
 {
-  "name": "vite-solid-tailwind-starter",
+  "name": "project-board",
   "version": "1.0.0",
-  "description": "Starter using Vite + Solid + Tailwind CSS",
+  "description": "Project Board",
   "scripts": {
     "start": "vite",
     "dev": "vite",
@@ -20,8 +20,10 @@
   "dependencies": {
     "@solidjs/router": "^0.7.0",
     "eslint-plugin-solid": "^0.9.3",
+    "firebase": "^9.17.1",
     "lodash": "^4.17.21",
     "pocketbase": "^0.10.0",
-    "solid-js": "^1.0.0"
+    "solid-js": "^1.0.0",
+    "solidjs-use": "^1.0.0"
   }
 }

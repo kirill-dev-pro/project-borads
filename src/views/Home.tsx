@@ -1,44 +1,32 @@
 import Header from '../components/Header'
-import { LoginForm } from '../components/LoginForm'
-import { useAuth, usePB } from '../lib/pocketbase'
-import { Component, createEffect, createSignal, For, Show } from 'solid-js'
-import { Record } from 'pocketbase'
+import { useAuth, useCollection } from '../lib/firebase'
+import { Component, createEffect, For, Show } from 'solid-js'
+import { serverTimestamp, where } from 'firebase/firestore'
 
 const Home: Component = () => {
   const { user, logout } = useAuth()
-  const pb = usePB()
-  const [projects, setProjects] = createSignal<Record[]>([])
 
-  createEffect(() => {
-    if (!user()) return
-    pb.collection('projects')
-      .getList(1, 10, {
-        filter: `owner.id = "${user().id}" || members.id = "${user().id}"`,
-      })
-      .then(res => {
-        setProjects(res.items)
-        console.log('res', res)
-      })
-      .catch(err => {
-        console.error(err)
-      })
-  })
+  const { documents: projects, addDocument } = useCollection('projects', [
+    // where('members', 'array-contains', loading() ? '' : user().uid),
+    where('owner', '==', user().uid),
+  ])
 
   const onClickCreateNew = () => {
-    pb.collection('projects')
-      .create({
-        title: 'New project',
-        description: 'New project description',
-        owner: user().id,
-      })
-      .then(res => {
-        console.log('res', res)
-        setProjects([...projects(), res])
-      })
-      .catch(err => {
-        console.error(err)
-      })
+    addDocument({
+      title: 'New project',
+      description: 'New project description',
+      created: serverTimestamp(),
+      owner: user().uid,
+      members: [user().uid],
+    })
+    // .then(res => {
+    //   console.log('res', res)
+    // })
   }
+
+  createEffect(() => {
+    console.log('projects', projects())
+  })
 
   return (
     <>
@@ -51,8 +39,10 @@ const Home: Component = () => {
             <h1>User Dashboard</h1>
             <p>Here you can see your profile and manage your workshops.</p>
 
-            <Show when={user()} fallback={<LoginForm />}>
-              <p>Logged in as {user().email}</p>
+            <Show when={user()} fallback='No user found'>
+              <p>
+                Logged in as <span class='rounded bg-green-200 p-1'>{user().uid}</span>
+              </p>
               <button onClick={logout} class='rounded border-2 border-black bg-white p-2'>
                 Logout
               </button>
