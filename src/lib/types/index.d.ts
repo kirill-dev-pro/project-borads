@@ -9,3 +9,11 @@ export interface Project {
   owner: string
   members: string[]
 }
+
+export interface User {
+  id: string
+  uid: string
+  name: string
+  email: string
+  createdAt: string
+}

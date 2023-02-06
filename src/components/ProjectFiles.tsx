@@ -1,50 +1,65 @@
-import { useAuth, usePB } from '../lib/pocketbase'
+import { useAuth, useCollection } from '../lib/firebase'
+import { useStorage } from '../lib/firebase/useStorage'
 import { createSignal, For, onMount } from 'solid-js'
-import _ from 'lodash'
+import { orderBy } from 'firebase/firestore'
+
+interface File {
+  id: string
+  name: string
+  fileUrl: string
+  author: string
+  created: number
+}
 
 export function ProjectFiles({ projectId }: { projectId: string }) {
-  const pb = usePB()
   const { user } = useAuth()
-  const [files, setFiles] = createSignal([])
+  const { uploadFile } = useStorage()
+  // const [files, setFiles] = createSignal([])
   const [selectedFiles, setSelectedFiles] = createSignal([])
+  const {
+    documents: files,
+    addDocument,
+    loading,
+  } = useCollection<File>('project/' + projectId + '/files', [orderBy('created', 'desc')])
 
   let filesRef
   let inputRef: HTMLInputElement
 
-  async function loadFiles() {
-    try {
-      const res = await pb.collection('files').getList(1 + Math.round(files().length / 10), 10, {
-        filter: `project = "${projectId}"`,
-        expand: 'author',
-        sort: '-created',
-      })
-      if (res.items.length === 0) return
-      setFiles(_.uniqBy([...files(), ...res.items], 'id'))
-    } catch (err) {
-      console.error('Error:', err)
-    }
-  }
+  // async function loadFiles() {
+  //   try {
+  //     const res = await pb.collection('files').getList(1 + Math.round(files().length / 10), 10, {
+  //       filter: `project = "${projectId}"`,
+  //       expand: 'author',
+  //       sort: '-created',
+  //     })
+  //     if (res.items.length === 0) return
+  //     setFiles(_.uniqBy([...files(), ...res.items], 'id'))
+  //   } catch (err) {
+  //     console.error('Error:', err)
+  //   }
+  // }
 
-  function uploadFile(e: Event) {
+  async function onUploadFile(e: Event) {
     e.preventDefault()
     const file = inputRef.files[0]
     if (!file) return
-    pb.collection('files')
-      .create({
-        file,
-        project: projectId,
-        author: user().id,
+    try {
+      const id = Math.random().toString(36).substring(2)
+      const fileUrl = await uploadFile(id, file)
+      await addDocument({
+        name: file.name,
+        fileUrl,
+        author: user().uid,
+        created: Date.now(),
       })
-      .then(res => {
-        inputRef.value = ''
-      })
-      .catch(err => {
-        console.error('Error:', err)
-      })
+      inputRef.value = ''
+    } catch (error) {
+      console.error('Error:', error)
+    }
   }
 
-  onMount(async () => {
-    await loadFiles()
+  onMount(() => {
+    if (loading()) return
     filesRef.scrollTop = filesRef.scrollHeight
   })
 
@@ -59,19 +74,29 @@ export function ProjectFiles({ projectId }: { projectId: string }) {
         class='h-36 overflow-x-hidden overflow-y-scroll rounded border border-black p-1'
         ref={filesRef}
       >
-        <For each={_.reverse(files())}>
+        <For each={[...files()].reverse()}>
           {file => (
-            <p class='w-full'>
-              <span class='rounded bg-green-100 p-px'>{file.expand.author.name}:</span> {file.file}
+            <p class='w-full rounded border border-black p-1'>
+              <span class='rounded bg-green-100 p-px text-xs'>{file.author}:</span>
+              <br />
+              <a
+                href={file.fileUrl}
+                target='_blank'
+                rel='noreferrer'
+                class='text-blue-500 underline'
+              >
+                {file.name || file.id}
+              </a>
+              <img src={file.fileUrl} />
             </p>
           )}
         </For>
       </div>
-      <form class='flex flex-col gap-2' onSubmit={uploadFile}>
+      <form class='flex flex-col gap-2' onSubmit={onUploadFile}>
         <input type='file' class='hidden' ref={inputRef} onChange={onFileSelect} multiple />
         <button
           type='button'
-          onClick={() => (inputRef.value = null) && inputRef.click()}
+          onClick={() => inputRef.click()}
           class='rounded border border-black p-1 hover:shadow active:translate-y-px active:scale-95'
         >
           Select file
