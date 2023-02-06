@@ -1,84 +1,65 @@
-import { useAuth, usePB } from '../lib/pocketbase'
-import _ from 'lodash'
-import { createEffect, createSignal, For, onCleanup, onMount } from 'solid-js'
+import { useAuth, useCollection } from '../lib/firebase'
+import { createEffect, createSignal, For } from 'solid-js'
+import { endAt, orderBy } from 'firebase/firestore'
+
+interface Message {
+  id: string
+  text: string
+  author: string
+  created: number
+}
 
 export function ProjectChat({ projectId }: { projectId: string }) {
-  const [messages, setMessages] = createSignal([])
-  const pb = usePB()
   const { user } = useAuth()
+  const [endAtDate, setEndAtDate] = createSignal(Date.now() - 1000 * 60 * 60 * 24)
+  const {
+    documents: messages,
+    loading,
+    addDocument,
+  } = useCollection<Message>('projects/' + projectId + '/messages', [
+    orderBy('created', 'desc'),
+    endAt(Date.now() - 1000 * 60 * 60 * 24),
+  ])
 
   let textareaRef
   let messagesRef
-
-  async function loadMessages() {
-    try {
-      const res = await pb
-        .collection('messages')
-        .getList(1 + Math.round(messages().length / 10), 10, {
-          filter: `project = "${projectId}"`,
-          expand: 'author',
-          sort: '-created',
-        })
-      if (res.items.length === 0) return
-      setMessages(_.uniqBy([...messages(), ...res.items], 'id'))
-    } catch (err) {
-      console.error('Error:', err)
-    }
-  }
 
   function sendMessage(e: Event) {
     e.preventDefault()
     const text = textareaRef.value
     if (text === '') return
-    pb.collection('messages')
-      .create({
-        text,
-        project: projectId,
-        author: user().id,
-      })
-      .then(res => {
-        textareaRef.value = ''
-      })
-      .catch(err => {
-        console.error('Error:', err)
-      })
+    addDocument({ text, author: user().uid, created: Date.now() })
+    textareaRef.value = ''
   }
 
-  onMount(async () => {
-    await loadMessages()
-    messagesRef.scrollTop = messagesRef.scrollHeight
+  createEffect(() => {
+    if (!loading() && messages()) {
+      console.log('messages', messages())
+      const timeout = setTimeout(() => {
+        if (messages().length === 0) {
+          console.log('call', endAtDate() - 1000 * 60 * 60 * 24)
+          setEndAtDate(endAtDate() - 1000 * 60 * 60 * 24)
+        }
+      }, 100)
+      return () => clearTimeout(timeout)
+    }
   })
 
-  createEffect(async () => {
-    const unsubscribe = await pb.realtime.subscribe('messages', async event => {
-      if (event.action === 'create' && event.record.project === projectId) {
-        // get full message with author
-        const record = await pb.collection('messages').getOne(event.record.id, {
-          expand: 'author',
-        })
-        setMessages(_.uniqBy([record, ...messages()], 'id'))
-        if (record.author.id !== user().id) {
-          messagesRef.scrollTop = messagesRef.scrollHeight
-        }
-      }
-    })
-    onCleanup(unsubscribe)
+  createEffect(() => {
+    if (!loading() && messages().length) {
+      messagesRef.scrollTop = messagesRef.scrollHeight
+    }
   })
 
   return (
     <div class='flex w-64 flex-col gap-2 rounded border border-black p-1'>
       <h2 class='text-xl'>Messages:</h2>
       <div
-        class='h-36 overflow-x-hidden overflow-y-scroll rounded border border-black p-1'
+        class='flex h-36 flex-col gap-1 overflow-x-hidden overflow-y-scroll rounded border border-black p-1'
         ref={messagesRef}
       >
-        <For each={_.reverse(messages())}>
-          {message => (
-            <p class='w-full'>
-              <span class='rounded bg-green-100 p-px'>{message.expand.author.name}:</span>{' '}
-              {message.text}
-            </p>
-          )}
+        <For each={[...messages()].reverse()}>
+          {message => <MessageBubble message={message} isOwn={message.author === user().uid} />}
         </For>
       </div>
       <form onSubmit={sendMessage} class='flex flex-col gap-2'>
@@ -91,5 +72,17 @@ export function ProjectChat({ projectId }: { projectId: string }) {
         </button>
       </form>
     </div>
+  )
+}
+
+function MessageBubble({ message, isOwn }: { message: Message; isOwn: boolean }) {
+  return (
+    <p class='flex flex-col rounded border border-black p-2'>
+      <span class='text-sm'>{new Date(message.created).toLocaleString('ru')}</span>
+      <span>
+        <span class='rounded bg-green-100 p-px text-xs'>{message.author}</span>:
+      </span>
+      <span>{message.text}</span>
+    </p>
   )
 }

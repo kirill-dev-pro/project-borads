@@ -1,6 +1,6 @@
-// import { ProjectChat } from '../components/ProjectChat'
+import { ProjectChat } from '../components/ProjectChat'
 import { ProjectUsers } from '../components/ProjectUsers'
-// import { ProjectFiles } from '../components/ProjectFiles'
+import { ProjectFiles } from '../components/ProjectFiles'
 import { useDocument } from '../lib/firebase'
 import type { Project } from '../lib/types'
 import { useParams } from '@solidjs/router'
@@ -84,9 +84,9 @@ export default function ProjectPage() {
             </button>
           </div>
         </div>
-        {/* <ProjectChat projectId={projectId} /> */}
+        <ProjectChat projectId={projectId} />
         <ProjectUsers project={project} updateProject={updateDocument} />
-        {/* <ProjectFiles projectId={projectId} /> */}
+        <ProjectFiles projectId={projectId} />
       </Show>
     </div>
   )

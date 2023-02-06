@@ -1,15 +1,8 @@
-import { Project } from '../lib/types'
-import { useCollection, useDocument } from '../lib/firebase'
-import { Accessor, createEffect, For, Show } from 'solid-js'
-import { where } from 'firebase/firestore'
-
-interface User {
-  id: string
-  uid: string
-  name: string
-  email: string
-  createdAt: string
-}
+import { Button } from './ui/Button'
+import { Project, User } from '../lib/types'
+import { useDocument } from '../lib/firebase'
+import { useProjectUsers } from '../lib/firebase/firestore/useProjectUsers'
+import { Accessor, For, Show } from 'solid-js'
 
 export function ProjectUsers({
   project,
@@ -19,13 +12,7 @@ export function ProjectUsers({
   updateProject: (project: Partial<Project>) => void
 }) {
   const { document: owner } = useDocument<User>('users/' + project().owner, false)
-  const { documents: members } = useCollection<User>('users', [
-    where('uid', 'in', project().members),
-  ])
-
-  createEffect(() => {
-    console.log('members', members())
-  })
+  const members = useProjectUsers(project)
 
   function onClickAdd() {
     const userId = prompt('Enter user id')
@@ -63,13 +50,7 @@ export function ProjectUsers({
           </For>
         </Show>
       </div>
-      <button
-        class='rounded border border-black p-2 transition-all duration-100 
-              hover:shadow active:scale-95'
-        onClick={onClickAdd}
-      >
-        Add user
-      </button>
+      <Button onClick={onClickAdd}>Add user</Button>
     </div>
   )
 }
