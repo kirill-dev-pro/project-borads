@@ -1,0 +1,26 @@
+import * as functions from 'firebase-functions'
+import * as admin from 'firebase-admin'
+
+// // Start writing functions
+// // https://firebase.google.com/docs/functions/typescript
+//
+// export const helloWorld = functions.https.onRequest((request, response) => {
+//   functions.logger.info("Hello logs!", {structuredData: true});
+//   response.send("Hello from Firebase!");
+// });
+
+const app = admin.initializeApp()
+
+exports.onCreateUser = functions.auth.user().onCreate(user => {
+  functions.logger.info('User created', user)
+  if (user.email) {
+    admin.firestore(app).collection('users').doc(user.uid).set({
+      email: user.email,
+      name: user.displayName,
+      photoURL: user.photoURL,
+      uid: user.uid,
+      createdAt: user.metadata.creationTime,
+      // lastSignInTime: user.metadata.lastSignInTime,
+    })
+  }
+})
