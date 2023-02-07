@@ -1,27 +1,25 @@
 import Header from '../components/Header'
 import { useAuth, useCollection } from '../lib/firebase'
+import { Project } from '../lib/types'
 import { Component, createEffect, For, Show } from 'solid-js'
 import { serverTimestamp, where } from 'firebase/firestore'
 
 const Home: Component = () => {
   const { user, logout } = useAuth()
 
-  const { documents: projects, addDocument } = useCollection('projects', [
-    // where('members', 'array-contains', loading() ? '' : user().uid),
-    where('owner', '==', user().uid),
+  const { documents: projects, addDocument } = useCollection<Project>('projects', [
+    where('members', 'array-contains', user().uid),
   ])
 
   const onClickCreateNew = () => {
+    const projectName = prompt('Enter project name')
     addDocument({
-      title: 'New project',
+      title: projectName,
       description: 'New project description',
       created: serverTimestamp(),
       owner: user().uid,
       members: [user().uid],
     })
-    // .then(res => {
-    //   console.log('res', res)
-    // })
   }
 
   createEffect(() => {
